@@ -1,0 +1,24 @@
+{
+    "author": "alexgervais <alex.gervais@gmail.com> (http://alexgervais.github.io)",
+    "name": "md5challenge",
+    "description": "My solutions to the MD5 challenge",
+    "version": "1.0.0",
+    "homepage": "https://github.com/alexgervais/md5challenge",
+    "private": true,
+    "main": "index.js",
+    "preferGlobal": true,
+    "bin": {
+        "md5challenge": "index.js"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/alexgervais/md5challenge.git"
+    },
+    "engines": {
+        "node": ">=0.10.0"
+    },
+    "dependencies": {
+        "MD5": "1.2.1",
+        "request": "2.53.0"
+    }
+}
