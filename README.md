@@ -9,7 +9,7 @@
 ## Installation
 
 ```bash
-npm install -g alexgervais/md5challenge
+sudo npm install -g alexgervais/md5challenge
 ```
 
 ## Usage
