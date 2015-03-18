@@ -2,11 +2,11 @@
 
 'use strict';
 
-var request = require('request');
-
 var rainbow = function (hash) {
 
     console.time('Done in');
+
+    var request = require('request');
     request('http://api.md5crack.com/crack/ba81a3fe2b049160b98f76a6/' + hash, function (error, response, body) {
         if (!error && response.statusCode == 200) {
             console.log(JSON.parse(response.body).parsed);
@@ -18,13 +18,30 @@ var rainbow = function (hash) {
     });
 };
 
-var brute = function (hash) {
+var brute = function (hash, processes) {
 
     console.time('Done in');
 
-    console.log('Failed!');
+    var chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+    var loops = chars.length / processes;
 
-    console.timeEnd('Done in');
+    var cp = require('child_process');
+    var childs = [];
+
+    for (var i = 0; i < processes; i++) {
+        childs.push(cp.fork('./lib/worker.js', [hash, chars, i * loops, (i + 1) * loops]).on('message', function (result) {
+
+            console.log(result);
+
+            childs.forEach(function (child) {
+                child.kill('SIGTERM');
+            });
+
+            console.timeEnd('Done in');
+
+            process.exit(0);
+        }));
+    }
 };
 
 var argv = process.argv;
@@ -37,14 +54,18 @@ if (!hash) {
 
 var howTo = argv[3] || 'rainbow';
 
-brute(hash);
-
-/*
 switch (howTo) {
+    case 'brute-single':
+        brute(hash.toLowerCase(), 1);
+        break;
     case 'brute':
-        brute(hash);
+        var cpus = require('os').cpus().length;
+        brute(hash.toLowerCase(), cpus);
+        break;
+    case 'rainbow':
+        rainbow(hash.toLowerCase());
         break;
     default:
-        rainbow(hash);
+        console.log('Unknown algorithm ' + howTo);
 }
-*/
+
