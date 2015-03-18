@@ -8,8 +8,9 @@ var rainbow = function (hash) {
 
     var request = require('request');
     request('http://api.md5crack.com/crack/ba81a3fe2b049160b98f76a6/' + hash, function (error, response, body) {
-        if (!error && response.statusCode == 200) {
-            console.log(JSON.parse(response.body).parsed);
+        var parsed = JSON.parse(response.body).parsed;
+        if (!error && response.statusCode == 200 && parsed) {
+            console.log(parsed);
         } else {
             console.log('Failed!');
         }
@@ -29,7 +30,7 @@ var brute = function (hash, processes) {
     var childs = [];
 
     for (var i = 0; i < processes; i++) {
-        childs.push(cp.fork('./lib/worker.js', [hash, chars, i * loops, (i + 1) * loops]).on('message', function (result) {
+        childs.push(cp.fork(__dirname + '/lib/worker.js', [hash, chars, i * loops, (i + 1) * loops]).on('message', function (result) {
 
             console.log(result);
 
