@@ -4,6 +4,7 @@
 
 * [Installation](#installation)
 * [Usage](#usage)
+ * [Algorithms](#algorithms)
 * [License](#license)
 
 ## Installation
@@ -15,8 +16,14 @@ sudo npm install -g alexgervais/md5challenge
 ## Usage
 
 ```bash
-md5challenge YOUR_MD5_HASH
+md5challenge MD5_HASH [ALGORITHM]
 ```
+
+### Algorithms
+
+`rainbow`
+`brute`
+`brute-single`
 
 ## License
 

@@ -2,45 +2,54 @@
 
 'use strict';
 
-var rainbow = function (hash) {
+console.time('Done in');
 
-    console.time('Done in');
+var logResultAndExit = function (result) {
 
-    var request = require('request');
-    request('http://api.md5crack.com/crack/ba81a3fe2b049160b98f76a6/' + hash, function (error, response, body) {
-        var parsed = JSON.parse(response.body).parsed;
-        if (!error && response.statusCode == 200 && parsed) {
-            console.log(parsed);
-        } else {
-            console.log('Failed!');
-        }
-
-        console.timeEnd('Done in');
-    });
+    console.log(result);
+    console.timeEnd('Done in');
+    process.exit(0);
 };
 
-var brute = function (hash, processes) {
+var rainbow = function (hash) {
 
-    console.time('Done in');
+    var request = require('request');
+
+    var requestCallback = function (error, response) {
+
+        var jsonbody = JSON.parse(response.body);
+        var parsed = jsonbody.parsed || jsonbody.result;
+
+        if (!error && response.statusCode == 200 && parsed) {
+            logResultAndExit(parsed);
+        }
+    };
+
+    request('http://api.md5crack.com/crack/ba81a3fe2b049160b98f76a6/' + hash, requestCallback);
+    request('http://md5cracker.org/api/api.cracker.php?r=8316&database=md5cracker.org&hash=' + hash, requestCallback);
+};
+
+var brute = function (hash, processes, random) {
 
     var chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
-    var loops = chars.length / processes;
+    if (random) {
+        chars = chars.split('').sort(function () {
+            return 0.5 - Math.random()
+        }).join('');
+    }
 
+    var loops = chars.length / processes;
     var cp = require('child_process');
     var childs = [];
 
     for (var i = 0; i < processes; i++) {
         childs.push(cp.fork(__dirname + '/lib/worker.js', [hash, chars, i * loops, (i + 1) * loops]).on('message', function (result) {
 
-            console.log(result);
-
             childs.forEach(function (child) {
                 child.kill('SIGTERM');
             });
 
-            console.timeEnd('Done in');
-
-            process.exit(0);
+            logResultAndExit(result);
         }));
     }
 };
@@ -49,24 +58,27 @@ var argv = process.argv;
 var hash = argv[2];
 
 if (!hash) {
-    console.log('Invalid usage! Expected: md5hash [mode]');
+    console.log('Invalid usage! Expected: md5hash [algorithm]');
     process.exit(1);
 }
 
-var howTo = argv[3] || 'rainbow';
+var algo = argv[3] || 'brute';
+var cpus = require('os').cpus().length;
 
-switch (howTo) {
+switch (algo) {
     case 'brute-single':
         brute(hash.toLowerCase(), 1);
         break;
+    case 'brute-random':
+        brute(hash.toLowerCase(), cpus, true);
+        break;
     case 'brute':
-        var cpus = require('os').cpus().length;
-        brute(hash.toLowerCase(), cpus);
+        brute(hash.toLowerCase(), 3);
         break;
     case 'rainbow':
         rainbow(hash.toLowerCase());
         break;
     default:
-        console.log('Unknown algorithm ' + howTo);
+        console.log('Unknown algorithm ' + algo);
 }
 
