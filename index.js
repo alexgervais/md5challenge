@@ -62,18 +62,30 @@ if (!hash) {
     process.exit(1);
 }
 
-var algo = argv[3] || 'brute';
+var algo = argv[3] || 'rainbow';
 var cpus = require('os').cpus().length;
 
 switch (algo) {
-    case 'brute-single':
+    case 'brute-1cpu':
         brute(hash.toLowerCase(), 1);
         break;
     case 'brute-random':
         brute(hash.toLowerCase(), cpus, true);
         break;
+    case 'brute-2':
+        if (cpus > 2) {
+            cpus -= 2;
+        }
+        brute(hash.toLowerCase(), cpus);
+        break;
+    case 'brute-1':
+        if (cpus > 1) {
+            cpus--;
+        }
+        brute(hash.toLowerCase(), cpus);
+        break;
     case 'brute':
-        brute(hash.toLowerCase(), 3);
+        brute(hash.toLowerCase(), cpus);
         break;
     case 'rainbow':
         rainbow(hash.toLowerCase());
